@@ -1,28 +1,29 @@
-import {
-  Image,
-  StyleSheet,
-  Platform,
-  View,
-  TextInput,
-  Button,
-} from "react-native";
+// import { Link, Stack } from "expo-router";
+// import { Text, View } from "react-native";
+
+// export default function Page() {
+//   return (
+//     <View>
+//       <Stack.Screen options={{ headerShown: true, title: "Home" }} />
+//       <Text>Index page of Home Tab</Text>
+//       <Link href={"/home/next-page"} style={{ marginTop: 16 }}>
+//         <Text style={{ fontWeight: "bold" }}>Go To Next Page</Text>
+//       </Link>
+//     </View>
+//   );
+// }
+
+import { StyleSheet, View, Button, Animated } from "react-native";
 
 import { ThemedView } from "@/components/ThemedView";
-import Animated, {
-  useAnimatedRef,
-  useScrollViewOffset,
-} from "react-native-reanimated";
-import {
-  useForm,
-  Controller,
-  SubmitHandler,
-  FieldValues,
-} from "react-hook-form";
+
+import { useForm, Controller, FieldValues } from "react-hook-form";
 import { Dropdown } from "react-native-element-dropdown";
-import { AntDesign } from "@expo/vector-icons";
-import { RadioButton, Text } from "react-native-paper";
-import { calculateTax } from "@/utils/TaxCalculation";
+
+import { calculateTax } from "@/utils/taxCalculation";
 import { useState } from "react";
+import { CheckBox, Input, Text } from "@rneui/themed";
+import { Link, Stack } from "expo-router";
 
 type TaxData = {
   grossIncome: string;
@@ -59,7 +60,9 @@ export default function HomeScreen() {
     <View style={[styles.container]}>
       <Animated.ScrollView scrollEventThrottle={16}>
         <ThemedView style={styles.content}>
-          <Text style={[styles.titleContainer]}>Tax Calculator</Text>
+          <Text style={[styles.titleContainer]} h1>
+            Tax Calculator
+          </Text>
           <View
             style={{
               borderWidth: 1,
@@ -73,23 +76,20 @@ export default function HomeScreen() {
                 min: 0,
               }}
               render={({ field: { onChange, onBlur, value } }) => (
-                <>
-                  <Text variant="labelLarge">Gross Income</Text>
-
-                  <TextInput
-                    placeholder="Please type your income"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType="numeric"
-                  />
-                </>
+                <Input
+                  label="Gross Income"
+                  placeholder="Please type your income"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="numeric"
+                  errorMessage={
+                    errors.grossIncome ? "This is required" : undefined
+                  }
+                />
               )}
               name="grossIncome"
             />
-            {errors.grossIncome && (
-              <Text variant="labelSmall">This is required.</Text>
-            )}
           </View>
           <View
             style={{
@@ -104,7 +104,7 @@ export default function HomeScreen() {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <>
-                  <Text variant="labelLarge">Repayment Plan</Text>
+                  <Text>Repayment Plan</Text>
                   <Dropdown
                     style={styles.dropdown}
                     placeholderStyle={styles.placeholderStyle}
@@ -127,7 +127,7 @@ export default function HomeScreen() {
               name="repaymentPlan"
             />
             {errors.repaymentPlan && (
-              <Text variant="labelSmall">This is required.</Text>
+              <Text style={{ color: "red" }}>This is required.</Text>
             )}
           </View>
           <View
@@ -141,35 +141,38 @@ export default function HomeScreen() {
               rules={{
                 required: true,
               }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <View>
-                  <Text variant="labelLarge">Post Graduate</Text>
-
-                  <RadioButton.Group
-                    onValueChange={(value) => onChange(value)}
-                    value={value}
-                  >
-                    <RadioButton.Item
-                      label="Yes"
-                      value="yes"
-                      color="red"
-                      uncheckedColor="grey"
-                      labelVariant="labelMedium"
-                    />
-                    <RadioButton.Item
-                      label="No"
-                      value="no"
-                      color="red"
-                      uncheckedColor="grey"
-                      labelVariant="labelMedium"
-                    />
-                  </RadioButton.Group>
-                </View>
-              )}
+              defaultValue={"no"}
+              render={({ field: { onChange, value } }) => {
+                return (
+                  <View>
+                    <Text>Post Graduate</Text>
+                    <View style={{ flex: 1, flexDirection: "row" }}>
+                      <CheckBox
+                        center
+                        title="No"
+                        checked={value === "no"}
+                        onPress={(value) => onChange("no")}
+                        iconType="material-community"
+                        checkedIcon="radiobox-marked"
+                        uncheckedIcon="radiobox-blank"
+                      />
+                      <CheckBox
+                        center
+                        title="Yes"
+                        checked={value === "yes"}
+                        onPress={() => onChange("yes")}
+                        iconType="material-community"
+                        checkedIcon="radiobox-marked"
+                        uncheckedIcon="radiobox-blank"
+                      />
+                    </View>
+                  </View>
+                );
+              }}
               name="postGraduate"
             />
             {errors.postGraduate && (
-              <Text variant="labelSmall">This is required.</Text>
+              <Text style={{ color: "red" }}>This is required.</Text>
             )}
           </View>
           <View
@@ -186,26 +189,25 @@ export default function HomeScreen() {
                 max: 100,
               }}
               render={({ field: { onChange, onBlur, value } }) => (
-                <>
-                  <Text variant="labelLarge">Gross Income</Text>
-
-                  <TextInput
-                    placeholder="Please type your income"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                    keyboardType="numeric"
-                  />
-                </>
+                <Input
+                  label="Pension Percentage"
+                  placeholder="Please type your pension percentage"
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  keyboardType="numeric"
+                  errorMessage={
+                    errors.pensionPercentage ? "This is required." : undefined
+                  }
+                />
               )}
               name="pensionPercentage"
             />
-            {errors.pensionPercentage && (
-              <Text variant="labelSmall">This is required.</Text>
-            )}
           </View>
-          <Button title="Submit" onPress={handleSubmit(onSubmit)} />
 
+          <Link href={"/home/next-page"} style={{ marginTop: 16 }}>
+            <Text style={{ fontWeight: "bold" }}>Go To Next Page</Text>
+          </Link>
           {takeHomePay && (
             <View>
               <Text style={{ textAlign: "center" }}>
