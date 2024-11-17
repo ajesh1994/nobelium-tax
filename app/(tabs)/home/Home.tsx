@@ -1,29 +1,39 @@
-// import { Link, Stack } from "expo-router";
-// import { Text, View } from "react-native";
-
-// export default function Page() {
-//   return (
-//     <View>
-//       <Stack.Screen options={{ headerShown: true, title: "Home" }} />
-//       <Text>Index page of Home Tab</Text>
-//       <Link href={"/home/next-page"} style={{ marginTop: 16 }}>
-//         <Text style={{ fontWeight: "bold" }}>Go To Next Page</Text>
-//       </Link>
-//     </View>
-//   );
-// }
-
-import { StyleSheet, View, Button, Animated } from "react-native";
+import { StyleSheet, Animated, View } from "react-native";
 
 import { ThemedView } from "@/components/ThemedView";
 
 import { useForm, Controller, FieldValues } from "react-hook-form";
 import { Dropdown } from "react-native-element-dropdown";
+import { Input, InputField } from "@/components/ui/input";
+import { Text } from "@/components/ui/text";
+import { router } from "expo-router";
+
+import { CircleIcon, HelpCircleIcon } from "@/components/ui/icon";
 
 import { calculateTax } from "@/utils/taxCalculation";
 import { useState } from "react";
-import { CheckBox, Input, Text } from "@rneui/themed";
 import { Link, Stack } from "expo-router";
+import {
+  Select,
+  SelectTrigger,
+  SelectInput,
+  SelectIcon,
+  SelectPortal,
+  SelectBackdrop,
+  SelectContent,
+  SelectDragIndicatorWrapper,
+  SelectDragIndicator,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  Radio,
+  RadioGroup,
+  RadioIcon,
+  RadioIndicator,
+  RadioLabel,
+} from "@/components/ui/radio";
+import { Button } from "@/components/ui/button";
+import { useTaxContext } from "@/utils/TaxContext";
 
 type TaxData = {
   grossIncome: string;
@@ -42,7 +52,8 @@ export default function HomeScreen() {
     control,
   } = useForm();
 
-  const [takeHomePay, setTakeHomePay] = useState<number | null>();
+  const { setTaxValues } = useTaxContext();
+
   const onSubmit = (data: FieldValues) => {
     const { grossIncome, pensionPercentage, postGraduate, repaymentPlan } =
       data;
@@ -53,22 +64,20 @@ export default function HomeScreen() {
       Number(pensionPercentage),
       hasPostgraduateLoan
     );
-    setTakeHomePay(calculatedTakeHomePay);
+
+    router.replace("./home/next-page");
+
+    setTaxValues({ takeHomePay: calculatedTakeHomePay.toString() });
   };
 
   return (
     <View style={[styles.container]}>
       <Animated.ScrollView scrollEventThrottle={16}>
         <ThemedView style={styles.content}>
-          <Text style={[styles.titleContainer]} h1>
+          <Text style={[styles.titleContainer]} size="3xl">
             Tax Calculator
           </Text>
-          <View
-            style={{
-              borderWidth: 1,
-              padding: 10,
-            }}
-          >
+          <View>
             <Controller
               control={control}
               rules={{
@@ -76,27 +85,37 @@ export default function HomeScreen() {
                 min: 0,
               }}
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label="Gross Income"
-                  placeholder="Please type your income"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  keyboardType="numeric"
-                  errorMessage={
-                    errors.grossIncome ? "This is required" : undefined
-                  }
-                />
+                <>
+                  <Text size="xl" style={{ color: "white" }}>
+                    Gross Income
+                  </Text>
+
+                  <Input
+                    variant="outline"
+                    size="md"
+                    isDisabled={false}
+                    isInvalid={!!errors.grossIncome}
+                    isReadOnly={false}
+                    isRequired={true}
+                    style={{ backgroundColor: "white" }}
+                  >
+                    <InputField
+                      value={value}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      placeholder="Type your income"
+                      keyboardType="numeric"
+                    />
+                  </Input>
+                </>
               )}
               name="grossIncome"
             />
+            {errors.grossIncome && (
+              <Text style={{ color: "#de6a57" }}>This is required.</Text>
+            )}
           </View>
-          <View
-            style={{
-              borderWidth: 1,
-              padding: 10,
-            }}
-          >
+          <View>
             <Controller
               control={control}
               rules={{
@@ -104,38 +123,45 @@ export default function HomeScreen() {
               }}
               render={({ field: { onChange, onBlur, value } }) => (
                 <>
-                  <Text>Repayment Plan</Text>
-                  <Dropdown
-                    style={styles.dropdown}
-                    placeholderStyle={styles.placeholderStyle}
-                    selectedTextStyle={styles.selectedTextStyle}
-                    inputSearchStyle={styles.inputSearchStyle}
-                    data={plans}
-                    search
-                    maxHeight={300}
-                    labelField="label"
-                    valueField="value"
-                    placeholder="Select Plan"
-                    searchPlaceholder="Search..."
-                    value={value}
-                    onChange={(item) => {
-                      onChange(item.value);
-                    }}
-                  />
+                  <Text size="xl" style={{ color: "white" }}>
+                    Repayment Plan
+                  </Text>
+                  <Select
+                    onValueChange={onChange}
+                    isInvalid={!!errors.repaymentPlan}
+                  >
+                    <SelectTrigger
+                      style={{ backgroundColor: "white" }}
+                      variant="outline"
+                      size="md"
+                    >
+                      <SelectInput placeholder="Select Plan" />
+                      <SelectIcon className="mr-3" />
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {plans.map((plan) => (
+                          <SelectItem
+                            label={plan.label}
+                            value={plan.value.toString()}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
+                  </Select>
                 </>
               )}
               name="repaymentPlan"
             />
             {errors.repaymentPlan && (
-              <Text style={{ color: "red" }}>This is required.</Text>
+              <Text style={{ color: "#de6a57" }}>This is required.</Text>
             )}
           </View>
-          <View
-            style={{
-              borderWidth: 1,
-              padding: 10,
-            }}
-          >
+          <View>
             <Controller
               control={control}
               rules={{
@@ -145,26 +171,43 @@ export default function HomeScreen() {
               render={({ field: { onChange, value } }) => {
                 return (
                   <View>
-                    <Text>Post Graduate</Text>
+                    <Text size="xl" style={{ color: "white" }}>
+                      Post Graduate
+                    </Text>
                     <View style={{ flex: 1, flexDirection: "row" }}>
-                      <CheckBox
-                        center
-                        title="No"
-                        checked={value === "no"}
-                        onPress={(value) => onChange("no")}
-                        iconType="material-community"
-                        checkedIcon="radiobox-marked"
-                        uncheckedIcon="radiobox-blank"
-                      />
-                      <CheckBox
-                        center
-                        title="Yes"
-                        checked={value === "yes"}
-                        onPress={() => onChange("yes")}
-                        iconType="material-community"
-                        checkedIcon="radiobox-marked"
-                        uncheckedIcon="radiobox-blank"
-                      />
+                      <RadioGroup
+                        style={{
+                          padding: 8,
+                          backgroundColor: "white",
+                          width: "100%",
+                        }}
+                        value={value}
+                        onChange={onChange}
+                      >
+                        <Radio
+                          value="no"
+                          size="md"
+                          isInvalid={false}
+                          isDisabled={false}
+                        >
+                          <RadioIndicator>
+                            <RadioIcon as={CircleIcon} />
+                          </RadioIndicator>
+                          <RadioLabel>No</RadioLabel>
+                        </Radio>
+
+                        <Radio
+                          value="yes"
+                          size="md"
+                          isInvalid={false}
+                          isDisabled={false}
+                        >
+                          <RadioIndicator>
+                            <RadioIcon as={CircleIcon} />
+                          </RadioIndicator>
+                          <RadioLabel>Yes</RadioLabel>
+                        </Radio>
+                      </RadioGroup>
                     </View>
                   </View>
                 );
@@ -172,15 +215,10 @@ export default function HomeScreen() {
               name="postGraduate"
             />
             {errors.postGraduate && (
-              <Text style={{ color: "red" }}>This is required.</Text>
+              <Text style={{ color: "#de6a57" }}>This is required.</Text>
             )}
           </View>
-          <View
-            style={{
-              borderWidth: 1,
-              padding: 10,
-            }}
-          >
+          <View>
             <Controller
               control={control}
               rules={{
@@ -189,33 +227,52 @@ export default function HomeScreen() {
                 max: 100,
               }}
               render={({ field: { onChange, onBlur, value } }) => (
-                <Input
-                  label="Pension Percentage"
-                  placeholder="Please type your pension percentage"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value}
-                  keyboardType="numeric"
-                  errorMessage={
-                    errors.pensionPercentage ? "This is required." : undefined
-                  }
-                />
+                <>
+                  <Text style={{ color: "white" }} size="xl">
+                    Pension Percentage
+                  </Text>
+
+                  <Input
+                    variant="outline"
+                    size="md"
+                    isDisabled={false}
+                    isInvalid={!!errors.pensionPercentage}
+                    isReadOnly={false}
+                    isRequired={true}
+                    style={{ backgroundColor: "white" }}
+                  >
+                    <InputField
+                      value={value}
+                      onBlur={onBlur}
+                      onChangeText={onChange}
+                      placeholder="Type your pension percentage"
+                      keyboardType="numeric"
+                    />
+                  </Input>
+                </>
               )}
               name="pensionPercentage"
             />
+            {errors.pensionPercentage && (
+              <Text style={{ color: "#de6a57" }}>This is required.</Text>
+            )}
           </View>
 
-          <Link href={"/home/next-page"} style={{ marginTop: 16 }}>
-            <Text style={{ fontWeight: "bold" }}>Go To Next Page</Text>
-          </Link>
-          {takeHomePay && (
-            <View>
-              <Text style={{ textAlign: "center" }}>
-                Your take home pay is
-                <Text style={{ color: "red" }}> {takeHomePay}</Text>
-              </Text>
-            </View>
-          )}
+          <Button
+            style={{ backgroundColor: "#de6a57" }}
+            onPress={handleSubmit(onSubmit)}
+          >
+            <Text
+              style={{
+                fontWeight: "bold",
+                color: "white",
+                textAlign: "center",
+                width: "100%",
+              }}
+            >
+              Calculate Pay
+            </Text>
+          </Button>
         </ThemedView>
       </Animated.ScrollView>
     </View>
@@ -232,11 +289,13 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 16,
     overflow: "hidden",
+    backgroundColor: "#66b49d",
   },
   titleContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
+    color: "white",
   },
   stepContainer: {
     gap: 8,

@@ -5,19 +5,22 @@ import { TabBarIcon } from "@/components/navigation/TabBarIcon";
 
 export default function TabsLayout() {
   const colorScheme = useColorScheme();
-
+  //usePathname()
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tabIconDefault,
         headerShown: false,
+        tabBarStyle: {
+          display: "none",
+        },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: "Home",
-          tabBarLabel: "Home",
+          headerShown: false,
+          tabBarShowLabel: false,
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon
               name={focused ? "home" : "home-outline"}
